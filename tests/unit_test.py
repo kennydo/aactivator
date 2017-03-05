@@ -18,6 +18,11 @@ def f_path(tmpdir):
 
 
 @pytest.fixture
+def unicode_path(tmpdir):
+    return tmpdir.join('\U0001f43c')
+
+
+@pytest.fixture
 def inactive_env(tmpdir):
     return (
         ('HOME', str(tmpdir)),
@@ -89,6 +94,14 @@ def test_get_output_nothing_special(tmpdir, inactive_env):
     output = aactivator.get_output(
         dict(inactive_env),
         str(tmpdir),
+    )
+    assert output == ''
+
+
+def test_get_output_in_unicode_dir_is_ok(unicode_path, inactive_env):
+    output = aactivator.get_output(
+        dict(inactive_env),
+        str(unicode_path.strpath.encode('utf8')),
     )
     assert output == ''
 

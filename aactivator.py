@@ -71,6 +71,21 @@ def get_filesystem_id(path):
             raise
 
 
+def expand_path_to_unicode(path):
+    try:
+        path = os.path.realpath(path)
+    except OSError as error:
+        if error.errno == 2:  # no such file
+            return ''
+        else:
+            raise
+
+    if sys.version_info.major == 2:
+        path = path.decode('utf8')
+
+    return path
+
+
 def insecure_inode(path):
     """This particular inode can be altered by someone other than the owner"""
     pathstat = os.stat(path).st_mode
@@ -293,13 +308,8 @@ def deaactivate(path, pwd):
 
 
 def get_output(environ, pwd='.', get_input=sys.stdin.readline, arg0='/path/to/aactivator'):
-    try:
-        pwd = os.path.realpath(pwd)
-    except OSError as error:
-        if error.errno == 2:  # no such file
-            return ''
-        else:
-            raise
+    pwd = expand_path_to_unicode(pwd)
+
     config = ActivateConfig(environ, get_input)
     activate_path = config.find_allowed(pwd)
     result = []
